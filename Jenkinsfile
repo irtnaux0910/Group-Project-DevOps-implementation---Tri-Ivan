@@ -5,10 +5,6 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
 
-    tools {
-        jdk 'JDK17'
-    }
-
     stages {
         stage('Checkout') {
             steps {
