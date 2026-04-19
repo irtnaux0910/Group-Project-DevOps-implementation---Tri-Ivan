@@ -14,13 +14,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat '.\\mvnw.cmd -B -DskipTests clean package'
+                sh '.\\mvnw.cmd -B -DskipTests clean package'
             }
         }
 
         stage('Test & Code Coverage') {
             steps {
-                bat '.\\mvnw.cmd -B test jacoco:report'
+                sh '.\\mvnw.cmd -B test jacoco:report'
             }
             post {
                 always {
