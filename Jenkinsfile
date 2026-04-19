@@ -14,13 +14,15 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh '.\\mvnw.cmd -B -DskipTests clean package'
+                sh 'chmod +x mvnw'
+                sh './mvnw -B -DskipTests clean package'
             }
         }
 
         stage('Test & Code Coverage') {
             steps {
-                sh '.\\mvnw.cmd -B test jacoco:report'
+                sh 'chmod +x mvnw'
+                sh './mvnw -B test jacoco:report'
             }
             post {
                 always {
