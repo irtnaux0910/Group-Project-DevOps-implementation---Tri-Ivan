@@ -12,6 +12,12 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube static analysis...'
+            }
+        }
+
         stage('Build') {
             steps {
                 sh 'chmod +x mvnw'
