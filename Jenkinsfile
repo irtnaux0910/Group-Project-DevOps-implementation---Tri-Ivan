@@ -46,6 +46,7 @@ pipeline {
         stage('Deploy to Dev') {
             steps {
                 echo 'Deploying to Dev...'
+                echo 'Launching app in Dev...'
             }
         }
 
