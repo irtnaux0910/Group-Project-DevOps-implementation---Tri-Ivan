@@ -1,0 +1,78 @@
+trigger:
+- main
+
+pool:
+  name: 'Default' # Ensure your laptop agent is running and "Listening"
+
+stages:
+- stage: Build
+  displayName: 'Build Stage (Java Maven)'
+  jobs:
+  - job: MavenJob
+    steps:
+    - task: Maven@3
+      displayName: 'Compile and Test Java'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17' # Verify this matches the version in your pom.xml
+        mavenVersionOption: 'Default'
+
+- stage: Deliver
+  displayName: 'Deliver Stage'
+  dependsOn: Build
+  jobs:
+  - job: Publish
+    steps:
+    - script: echo "Generating .jar artifact..."
+
+- stage: Deploy_Dev
+  displayName: 'Deploy to Dev'
+  dependsOn: Deliver
+  jobs:
+  - deployment: Dev
+    environment: 'Dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Launching Spring Boot App in Dev..."
+
+- stage: Deploy_QAT
+  displayName: 'Deploy to QAT'
+  dependsOn: Deploy_Dev
+  jobs:
+  - deployment: QAT
+    environment: 'QAT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Running QAT tests..."
+
+- stage: Deploy_Staging
+  displayName: 'Deploy to Staging'
+  dependsOn: Deploy_QAT
+  jobs:
+  - deployment: Staging
+    environment: 'Staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to Staging..."
+
+- stage: Deploy_Prod
+  displayName: 'Deploy to Production'
+  dependsOn: Deploy_Staging
+  jobs:
+  - deployment: Production
+    environment: 'Production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Final Production Deployment Successful!"
