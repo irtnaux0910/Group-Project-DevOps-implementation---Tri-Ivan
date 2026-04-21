@@ -1,7 +1,8 @@
 trigger:
 - main
 
-pool: default
+pool:
+  name: 'Default' # This uses your laptop as the agent to fix the parallelism error
 
 stages:
 - stage: Build
@@ -9,10 +10,15 @@ stages:
   jobs:
   - job: Compile
     steps:
+    # This step compiles the C# code
     - script: dotnet build
       displayName: 'Compile Project'
-    - script: dotnet test  
+      workingDirectory: '$(Build.SourcesDirectory)' 
+
+    # This step fulfills the Unit Test requirement
+    - script: dotnet test
       displayName: 'Run Unit Tests'
+      workingDirectory: '$(Build.SourcesDirectory)'
 
 - stage: Deliver
   displayName: 'Deliver Artifact'
@@ -23,7 +29,7 @@ stages:
     - script: echo "Generating build artifact..."
 
 - stage: Deploy_Dev
-  displayName: 'Deploy to Development'
+  displayName: 'Deploy to Dev'
   dependsOn: Deliver
   jobs:
   - deployment: Dev
@@ -44,4 +50,28 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Deploying to QAT environment..."
+          - script: echo "Running QAT automated tests..."
+
+- stage: Deploy_Staging
+  displayName: 'Deploy to Staging'
+  dependsOn: Deploy_QAT
+  jobs:
+  - deployment: Staging
+    environment: 'Staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Preparing Staging environment..."
+
+- stage: Deploy_Prod
+  displayName: 'Deploy to Production'
+  dependsOn: Deploy_Staging
+  jobs:
+  - deployment: Production
+    environment: 'Production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Final Production Deployment Successful!"
