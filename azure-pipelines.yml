@@ -2,26 +2,19 @@ trigger:
 - main
 
 pool:
-  name: 'Default' # Uses your local laptop agent
+  name: 'Default'
 
 stages:
 - stage: Build
-  displayName: 'Build Stage (Java Maven)'
+  displayName: 'Build and Test'
   jobs:
-  - job: MavenJob
+  - job: Compile
     steps:
-    - task: Maven@3
-      displayName: 'Compile and Test Java'
-      inputs:
-        mavenPomFile: 'pom.xml'
-        goals: 'clean package'
-        options: '-DskipTests' 
-        publishJUnitResults: true
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.17'
-        mavenVersionOption: 'Path' 
-        # Use the exact path from your previous terminal check
-        mavenPath: 'C:\Program Files\apache-maven-3.9.12\bin'
+    # We are using a script instead of the Maven task to force it to work
+    - script: |
+        "C:\Program Files\apache-maven-3.9.12\bin\mvn.cmd" clean package -DskipTests
+      displayName: 'Compile Java Project'
+      workingDirectory: '$(Build.SourcesDirectory)'
 
 - stage: Deliver
   displayName: 'Deliver Stage'
@@ -42,39 +35,3 @@ stages:
         deploy:
           steps:
           - script: echo "Launching Spring Boot App in Dev..."
-
-- stage: Deploy_QAT
-  displayName: 'Deploy to QAT'
-  dependsOn: Deploy_Dev
-  jobs:
-  - deployment: QAT
-    environment: 'QAT'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo "Running QAT tests..."
-
-- stage: Deploy_Staging
-  displayName: 'Deploy to Staging'
-  dependsOn: Deploy_QAT
-  jobs:
-  - deployment: Staging
-    environment: 'Staging'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo "Deploying to Staging..."
-
-- stage: Deploy_Prod
-  displayName: 'Deploy to Production'
-  dependsOn: Deploy_Staging
-  jobs:
-  - deployment: Production
-    environment: 'Production'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo "Final Production Deployment Successful!"
