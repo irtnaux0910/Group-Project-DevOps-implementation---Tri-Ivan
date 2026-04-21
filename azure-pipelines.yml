@@ -10,9 +10,9 @@ stages:
   jobs:
   - job: Compile
     steps:
-    - script: dotnet build  # For C# project
+    - script: dotnet build
       displayName: 'Compile Project'
-    - script: dotnet test   # To meet the unit test requirement
+    - script: dotnet test  
       displayName: 'Run Unit Tests'
 
 - stage: Deliver
@@ -46,5 +46,3 @@ stages:
         deploy:
           steps:
           - script: echo "Deploying to QAT environment..."
-
-# Repeat for Staging and Production stages...
