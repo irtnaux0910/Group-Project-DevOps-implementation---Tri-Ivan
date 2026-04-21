@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: 'Default' # This uses your laptop agent to avoid the parallelism error
+  name: 'Default' # This uses your local laptop agent
 
 stages:
 - stage: Build
@@ -10,7 +10,6 @@ stages:
   jobs:
   - job: MavenJob
     steps:
-    # This is the correct task for your Java project
     - task: Maven@3
       displayName: 'Compile and Test Java'
       inputs:
@@ -19,7 +18,7 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
         javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.17' # Change to '1.11' if your pom.xml uses Java 11
+        jdkVersionOption: '1.17'
         mavenVersionOption: 'Default'
 
 - stage: Deliver
