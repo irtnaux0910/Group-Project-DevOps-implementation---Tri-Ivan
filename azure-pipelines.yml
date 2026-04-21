@@ -2,31 +2,33 @@ trigger:
 - main
 
 pool:
-  name: 'Default' # This uses your laptop as the agent to fix the parallelism error
+  name: 'Default' # This uses your laptop agent to avoid the parallelism error
 
 stages:
 - stage: Build
-  displayName: 'Build and Test'
+  displayName: 'Build Stage (Java Maven)'
   jobs:
-  - job: Compile
+  - job: MavenJob
     steps:
-    # This step compiles the C# code
-    - script: dotnet build
-      displayName: 'Compile Project'
-      workingDirectory: '$(Build.SourcesDirectory)' 
-
-    # This step fulfills the Unit Test requirement
-    - script: dotnet test
-      displayName: 'Run Unit Tests'
-      workingDirectory: '$(Build.SourcesDirectory)'
+    # This is the correct task for your Java project
+    - task: Maven@3
+      displayName: 'Compile and Test Java'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17' # Change to '1.11' if your pom.xml uses Java 11
+        mavenVersionOption: 'Default'
 
 - stage: Deliver
-  displayName: 'Deliver Artifact'
+  displayName: 'Deliver Stage'
   dependsOn: Build
   jobs:
   - job: Publish
     steps:
-    - script: echo "Generating build artifact..."
+    - script: echo "Generating Java .jar artifact..."
 
 - stage: Deploy_Dev
   displayName: 'Deploy to Dev'
@@ -38,7 +40,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Launching Deployed App in Dev..."
+          - script: echo "Launching Spring Boot App in Dev..."
 
 - stage: Deploy_QAT
   displayName: 'Deploy to QAT'
@@ -50,7 +52,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Running QAT automated tests..."
+          - script: echo "Running QAT tests..."
 
 - stage: Deploy_Staging
   displayName: 'Deploy to Staging'
@@ -62,7 +64,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Preparing Staging environment..."
+          - script: echo "Deploying to Staging..."
 
 - stage: Deploy_Prod
   displayName: 'Deploy to Production'
