@@ -6,7 +6,45 @@ pool:
 
 stages:
 - stage: Build
+  displayName: 'Build and Test'
   jobs:
   - job: Compile
     steps:
-    - script: echo "Compiling project..."
+    - script: dotnet build  # For C# project
+      displayName: 'Compile Project'
+    - script: dotnet test   # To meet the unit test requirement
+      displayName: 'Run Unit Tests'
+
+- stage: Deliver
+  displayName: 'Deliver Artifact'
+  dependsOn: Build
+  jobs:
+  - job: Publish
+    steps:
+    - script: echo "Generating build artifact..."
+
+- stage: Deploy_Dev
+  displayName: 'Deploy to Development'
+  dependsOn: Deliver
+  jobs:
+  - deployment: Dev
+    environment: 'Dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Launching Deployed App in Dev..."
+
+- stage: Deploy_QAT
+  displayName: 'Deploy to QAT'
+  dependsOn: Deploy_Dev
+  jobs:
+  - deployment: QAT
+    environment: 'QAT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to QAT environment..."
+
+# Repeat for Staging and Production stages...
