@@ -5,21 +5,17 @@ pool:
   name: 'Default' # This uses your local laptop agent
 
 stages:
-- stage: Build
-  displayName: 'Build Stage (Java Maven)'
-  jobs:
-  - job: MavenJob
-    steps:
-    - task: Maven@3
+- task: Maven@3
       displayName: 'Compile and Test Java'
       inputs:
         mavenPomFile: 'pom.xml'
         goals: 'clean package'
+        options: '-DskipTests' # Keeps it fast for your demo
         publishJUnitResults: true
-        testResultsFiles: '**/surefire-reports/TEST-*.xml'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
-        mavenVersionOption: 'Default'
+        mavenVersionOption: 'Path' # Tell it we are providing a specific path
+        mavenPath: 'C:\Program Files\apache-maven-3.9.12\bin' # This matches your terminal output
 
 - stage: Deliver
   displayName: 'Deliver Stage'
