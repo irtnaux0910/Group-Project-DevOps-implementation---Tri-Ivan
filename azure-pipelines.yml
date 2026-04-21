@@ -20,7 +20,8 @@ stages:
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
         mavenVersionOption: 'Path' 
-        mavenPath: 'C:\Program Files\apache-maven-3.9.12\bin' 
+        # Use the exact path from your previous terminal check
+        mavenPath: 'C:\Program Files\apache-maven-3.9.12\bin'
 
 - stage: Deliver
   displayName: 'Deliver Stage'
